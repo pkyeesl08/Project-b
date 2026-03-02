@@ -1,0 +1,14 @@
+{
+  "name": "chaos-zero-nightmare-worldcup",
+  "version": "1.0.0",
+  "description": "카오스 제로 나이트메어 이상형 월드컵 - 실시간 멀티플레이어 투표 게임",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  }
+}
