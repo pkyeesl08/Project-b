@@ -291,6 +291,30 @@
       z-index: 2;
     }
 
+    .char-avatar {
+      width: clamp(80px, 30vw, 140px);
+      height: clamp(80px, 30vw, 140px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(2rem, 10vw, 3.5rem);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 12px;
+      border: 3px solid rgba(255,255,255,0.2);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .char-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
     .char-emoji {
       font-size: clamp(3rem, 15vw, 5rem);
       margin-bottom: 12px;
@@ -354,7 +378,6 @@
       margin: 20px 0;
     }
 
-    .result-winner .char-emoji { font-size: 4rem; }
     .result-winner .char-name { font-size: 1.5rem; }
 
     .result-vs {
@@ -418,7 +441,6 @@
       text-align: center;
     }
 
-    .champion .char-emoji { font-size: 5rem; }
     .champion .char-name {
       font-size: 2rem;
       background: linear-gradient(90deg, #ffd700, #ff8800);
@@ -457,7 +479,29 @@
     .rank-num.silver { color: #c0c0c0; }
     .rank-num.bronze { color: #cd7f32; }
 
-    .rank-emoji { font-size: 1.5rem; }
+    .rank-avatar-sm {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .rank-avatar-sm img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
     .rank-name { font-size: 1rem; font-weight: 700; flex: 1; }
 
     .final-actions {
@@ -534,13 +578,13 @@
     <div class="timer-text" id="timer-text">10</div>
     <div class="vote-area">
       <div class="vote-card" id="card-left">
-        <div class="char-emoji" id="left-emoji"></div>
+        <div class="char-avatar" id="left-avatar"></div>
         <div class="char-name" id="left-name"></div>
         <div class="char-desc" id="left-desc"></div>
       </div>
       <div class="vs-divider"><div class="vs-badge">VS</div></div>
       <div class="vote-card" id="card-right">
-        <div class="char-emoji" id="right-emoji"></div>
+        <div class="char-avatar" id="right-avatar"></div>
         <div class="char-name" id="right-name"></div>
         <div class="char-desc" id="right-desc"></div>
       </div>
@@ -559,7 +603,7 @@
   <div id="result-screen" class="screen">
     <div class="result-title" id="result-round-name"></div>
     <div class="result-winner animate-bounce">
-      <div class="char-emoji" id="result-emoji"></div>
+      <div class="char-avatar" id="result-avatar" style="margin:0 auto 12px"></div>
       <div class="char-name" id="result-name">승리!</div>
     </div>
     <div class="result-votes">
@@ -582,7 +626,7 @@
     <div class="final-title">최종 결과</div>
     <div class="champion">
       <div class="crown">👑</div>
-      <div class="char-emoji" id="champ-emoji"></div>
+      <div class="char-avatar" id="champ-avatar" style="margin:0 auto 12px; width:120px; height:120px; font-size:3rem;"></div>
       <div class="char-name" id="champ-name"></div>
       <div class="char-desc" id="champ-desc"></div>
     </div>
@@ -666,10 +710,10 @@
       leftCard.style.background = `linear-gradient(135deg, ${data.left.color}22, ${data.left.color}11)`;
       rightCard.style.background = `linear-gradient(135deg, ${data.right.color}22, ${data.right.color}11)`;
 
-      document.getElementById('left-emoji').textContent = data.left.emoji;
+      renderAvatar('left-avatar', data.left);
       document.getElementById('left-name').textContent = data.left.name;
       document.getElementById('left-desc').textContent = data.left.desc;
-      document.getElementById('right-emoji').textContent = data.right.emoji;
+      renderAvatar('right-avatar', data.right);
       document.getElementById('right-name').textContent = data.right.name;
       document.getElementById('right-desc').textContent = data.right.desc;
 
@@ -742,7 +786,7 @@
       showScreen('result');
 
       document.getElementById('result-round-name').textContent = data.roundName;
-      document.getElementById('result-emoji').textContent = data.winner.emoji;
+      renderAvatar('result-avatar', data.winner);
       document.getElementById('result-name').textContent = data.winner.name + ' 승리!';
       document.getElementById('result-left-votes').textContent = data.leftVotes;
       document.getElementById('result-right-votes').textContent = data.rightVotes;
@@ -768,7 +812,7 @@
 
       const champ = data.ranking[0]?.character;
       if (champ) {
-        document.getElementById('champ-emoji').textContent = champ.emoji;
+        renderAvatar('champ-avatar', champ);
         document.getElementById('champ-name').textContent = champ.name;
         document.getElementById('champ-desc').textContent = champ.desc;
       }
@@ -781,10 +825,15 @@
         else if (r.rank === 2) { rankClass = 'silver'; prefix = '🥈'; }
         else if (r.rank === 3) { rankClass = 'bronze'; prefix = '🥉'; }
 
+        const initial = r.character.name[0];
+        const imgPath = `/images/${r.character.id}.png`;
         return `
           <div class="rank-item">
             <div class="rank-num ${rankClass}">${prefix}</div>
-            <div class="rank-emoji">${r.character.emoji}</div>
+            <div class="rank-avatar-sm" style="background:${r.character.color}">
+              <img src="${imgPath}" alt="${escapeHtml(r.character.name)}" onerror="this.remove()">
+              ${escapeHtml(initial)}
+            </div>
             <div class="rank-name">${escapeHtml(r.character.name)}</div>
           </div>
         `;
@@ -804,6 +853,14 @@
       const d = document.createElement('div');
       d.textContent = text;
       return d.innerHTML;
+    }
+
+    function renderAvatar(elementId, character) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.style.background = character.color;
+      const imgPath = `/images/${character.id}.png`;
+      el.innerHTML = `<img src="${imgPath}" alt="${escapeHtml(character.name)}" onerror="this.remove()">${escapeHtml(character.name[0])}`;
     }
 
     // ─── Simple Confetti ───
